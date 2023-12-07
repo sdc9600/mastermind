@@ -1,10 +1,12 @@
 # Methods relating to the game of Mastermind
 require 'pry-byebug'
-class Mastermind
+class MastermindHumanBreaker
+  attr_reader :turn
   def initialize
     @computer_code = Array.new(4)
     @colours = ['B','G','R','Y','O','V']
     @guess = ''
+    @turn = 1
   end
 
   def generate_computer_code
@@ -12,8 +14,7 @@ class Mastermind
   end
 
   def human_guess_code
-    puts "Please enter a four character string containing a combination of 'b, g, r, y, o, v to guess 
-    the secret code!"
+    puts "Please enter a four character string containing a combination of 'b, g, r, y, o, v to guess the secret code!"
     until @guess.length == 4 && @guess.scan(/[BGRYOV]/).join.length == 4
       @guess = gets.chomp.upcase
       #binding.pry
@@ -36,13 +37,72 @@ class Mastermind
         incorrect_peg += 1
       end
     end
-    puts "Your guess contains #{correct_position} colours in the right posiiton, 
+    puts "\nYour guess contains #{correct_position} colours in the right posiiton, 
     #{incorrect_position} colours in the incorrect position
-    and #{incorrect_peg} colours not existing in the code!"
+    and #{incorrect_peg} colours not existing in the code!\n"
+    @turn +=1
+    @guess = ''
   end
 end
 
-game = Mastermind.new
+class MastermindComputerBreaker
+  attr_reader :set_of_guesses
+  def initialize
+    @human_code = ''
+    @turn = 1
+    @colours = ['B','G','R','Y','O','V']
+    @set_of_guesses = []
+  end
 
-game.human_guess_code
-game.evaluate_guess
+  def computer_set
+    i = 0
+    j = 0
+    k = 0
+    l = 0
+    until @set_of_guesses.length == 1296
+    @set_of_guesses.append(@colours[i]+@colours[j]+@colours[k]+@colours[l])
+    if l < 5
+      l += 1
+    elsif k < 5
+      k += 1
+      l = 0
+    elsif j < 5
+      j += 1
+      k = 0
+      l = 0
+    elsif i < 5
+      i += 1
+      j = 0
+      k = 0
+      l = 0
+    end
+  end
+end
+
+  def human_set_code
+    puts "Please enter a four character string containing a combination of 'b, g, r, y, o, v to guess the secret code!"
+    until @human_code.length == 4 && @human_code.scan(/[BGRYOV]/).join.length == 4
+      @human_code = gets.chomp.upcase
+    end
+    @human_code = @human_code.chars
+  end
+end
+
+game = MastermindComputerBreaker.new
+game.human_set_code
+print game.computer_set
+print game.set_of_guesses.length
+
+
+
+
+if 1==0
+game = MastermindHumanBreaker.new
+game.generate_computer_code
+
+
+while game.turn < 13
+  game.human_guess_code
+  game.evaluate_guess
+end
+end
