@@ -52,6 +52,7 @@ class MastermindComputerBreaker
     @turn = 1
     @colours = ['B','G','R','Y','O','V']
     @set_of_guesses = []
+    @copy_of_guesses = []
     @computer_guess = ['B','B','G','G']
     @black_pegs = 0
     @white_pegs = 0
@@ -94,67 +95,44 @@ end
   def computer_codebreaker
     if @turn == 1
       self.evaluate_computer_guess(@computer_guess)
-    end
+    else
     @computer_guess = @set_of_guesses.sample
     evaluate_computer_guess(@computer_guess)
+    end
   end
 
   def pop_from_set
+    hash = {}
     @set_of_guesses.each_index do
       |i|
+      test_case = @set_of_guesses[i]
     direct_hit = 0
     indirect_hit = 0
       @computer_guess.each_index do
         |index|
         if @computer_guess[index] == @set_of_guesses[i][index]
           direct_hit += 1
-        elsif @computer_guess[index].include? @set_of_guesses[i].join
+        elsif @set_of_guesses[i].join.include? @computer_guess[index]
         indirect_hit += 1
       end
+      hash[@set_of_guesses[i]] = direct_hit
     end
-      
-      if @black_pegs == 0 && @white_pegs == 0 && direct_hit != 0
-        @set_of_guesses.delete(@set_of_guesses[i])
-        i -= 1
-      elsif @black_pegs == 1 && @white_pegs == 0 && direct_hit != 1
-        @set_of_guesses.delete(@set_of_guesses[i])
-        i -= 1
-      elsif @black_pegs == 2 && @white_pegs == 0 && direct_hit != 2
-        @set_of_guesses.delete(@set_of_guesses[i])
-        i -= 1
-      elsif @black_pegs == 3 && direct_hit != 3
-        @set_of_guesses.delete(@set_of_guesses[i])
-        i -= 1
-      elsif @black_pegs == 0 && @white_pegs == 1 && indirect_hit != 1
-        @set_of_guesses.delete(@set_of_guesses[i])
-        i -= 1
-      elsif @black_pegs == 0 && @white_pegs == 2 && indirect_hit != 2
-        @set_of_guesses.delete(@set_of_guesses[i])
-        i -= 1
-      elsif @black_pegs == 0 && @white_pegs == 3 && indirect_hit != 3
-        @set_of_guesses.delete(@set_of_guesses[i])
-        i -= 1
-      elsif @black_pegs == 0 && @white_pegs == 4 && indirect_hit != 4
-        @set_of_guesses.delete(@set_of_guesses[i])
-        i -= 1
-      elsif @black_pegs == 1 && @white_pegs == 1 && (direct_hit + indirect_hit) != 2
-        @set_of_guesses.delete(@set_of_guesses[i])
-        i -= 1
-      elsif @black_pegs == 1 && @white_pegs == 2 && (direct_hit + indirect_hit) != 3
-        @set_of_guesses.delete(@set_of_guesses[i])
-        i -= 1
-      elsif @black_pegs == 1 && @white_pegs == 3 && (direct_hit + indirect_hit) != 4
-        @set_of_guesses.delete(@set_of_guesses[i])
-        i -= 1
-      elsif @black_pegs == 2 && @white_pegs == 2 && (direct_hit + indirect_hit) != 4
-        @set_of_guesses.delete(@set_of_guesses[i])
-        i -= 1
+      if @black_pegs > 0 && @white_pegs == 0 && @black_pegs != direct_hit && indirect_hit != 0
+        hash.delete(test_case)
+      elsif @black_pegs == 0 && @white_pegs > 0  && @white_pegs != indirect_hit && direct_hit != 0
+        hash.delete(test_case)
+      elsif @black_pegs > 0 && @white_pegs > 0 && direct_hit != @black_pegs && indirect_hit != @white_pegs
+        hash.delete(test_case)
       end 
     end
+    @set_of_guesses = hash.keys
     puts @set_of_guesses.length
+    puts @computer_guess
+    print hash
   end
 
   def evaluate_computer_guess(guess)
+    
   incorrect_pegs = 0
   @black_pegs = 0
   @white_pegs = 0
@@ -170,7 +148,7 @@ end
       incorrect_pegs += 1
     end
   end
-  puts "\nYour guess contains #{@black_pegs} colours in the right posiiton, 
+  puts "\n\nThe computer has guessed #{guess}\nYour guess contains #{@black_pegs} colours in the right posiiton, 
   #{@white_pegs} colours in the incorrect position
   and #{incorrect_pegs} colours not existing in the code!\n"
   @turn +=1
@@ -181,9 +159,8 @@ game = MastermindComputerBreaker.new
 game.computer_set
 game.human_set_code
 
-while game.turn < 20
+while game.turn < 10
 game.computer_codebreaker
-puts game.black_pegs
 if game.black_pegs == 4
   puts "You've guessed the code correctly and win!"
   break 
